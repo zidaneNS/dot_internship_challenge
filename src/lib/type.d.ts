@@ -9,3 +9,10 @@ export type Question = {
     options: string[],
     answer: number
 }
+
+export type LoginFormState = | {
+    errors?: {
+        user?: string[]
+    },
+    message?: string
+} | undefined
