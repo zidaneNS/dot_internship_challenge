@@ -1,11 +1,3 @@
-import { useLocalStorage } from "./utils"
-
-export const getUser = () => {
-    const { getLocalStorage } = useLocalStorage('user');
-    const user: string | null = getLocalStorage();
-    return user;
-}
-
 export function shuffleArray<T>(array: T[]): T[] {
     const shuffled = [...array]; 
     for (let i = shuffled.length - 1; i > 0; i--) {

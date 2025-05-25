@@ -1,6 +1,17 @@
+'use client';
+
 import LoginForm from "@/components/LoginForm";
+import userContext from "@/context/userContext";
+import { redirect } from "next/navigation";
+import { useContext } from "react";
 
 export default function Page() {
+  const { user } = useContext(userContext);
+
+  if (user) {
+    return redirect('/quiz');
+  }
+  
   return (
     <main className="flex flex-col gap-y-8 w-full items-center z-10 px-8">
       <div className="absolute inset-0 z-0">

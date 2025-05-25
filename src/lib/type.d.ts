@@ -1,10 +1,10 @@
-export type FetchQuestion = {
+export type FetchQuiz = {
     question: string,
     correct_answer: string,
     incorrect_answers: string[]
 }
 
-export type Question = {
+export type Quiz = {
     question: string,
     options: string[],
     answer: number
