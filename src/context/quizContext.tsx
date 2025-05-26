@@ -5,12 +5,14 @@ import { FetchQuiz, Quiz } from "@/lib/type";
 import { createContext, useEffect, useState } from "react";
 
 export type QuizContext = {
-    quiz: Quiz[]
-}
+    quiz: Quiz[],
+    removeQuiz: () => void
+};
 
 const initContext: QuizContext = {
-    quiz: []
-}
+    quiz: [],
+    removeQuiz: () => {}
+};
 
 const quizContext = createContext<QuizContext>(initContext);
 
@@ -18,48 +20,57 @@ export default quizContext;
 
 export function QuizProvider({ children }: { children: React.ReactNode }) {
     const [quiz, setQuiz] = useState<Quiz[]>([]);
-    
-    useEffect(() => {     
+
+    useEffect(() => {
         const getQuiz = async () => {
-            const response = await fetch("https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple", {
-                method: "GET"
-            });
-            
-            if (response.status === 200) {
+            try {
+                const response = await fetch("https://opentdb.com/api.php?amount=5&category=9&difficulty=easy&type=multiple");
+                if (!response.ok) throw new Error("Fetch failed");
+
                 const data = await response.json();
                 const rawQuiz: FetchQuiz[] = data.results || [];
-                
+
                 const filteredQuiz: Quiz[] = rawQuiz.map(item => {
                     const question = item.question;
-                    const options: string[] = [];
-                    options.push(item.correct_answer);
-                    item.incorrect_answers.forEach(el => options.push(el));
-                    
-                    const shuffledOptions = shuffleArray(options);
-                    
-                    const answer = shuffledOptions.indexOf(item.correct_answer);
-                    
-                    return {
-                        question,
-                        options: shuffledOptions,
-                        answer
-                    }       
+                    const options = shuffleArray([item.correct_answer, ...item.incorrect_answers]);
+                    const answer = options.indexOf(item.correct_answer);
+
+                    return { question, options, answer };
                 });
-                
-                localStorage.setItem('quiz', JSON.stringify(filteredQuiz));
+
+                localStorage.setItem("quiz", JSON.stringify(filteredQuiz));
+                localStorage.setItem("answers", JSON.stringify(Array(filteredQuiz.length).fill(null)));
+
                 setQuiz(filteredQuiz);
+            } catch (err) {
+                console.error("Failed to fetch quiz:", err);
             }
-        }
-        
-        const sttoredQuiz = localStorage.getItem("quiz");
-        localStorage.setItem('answers', JSON.stringify([]));
-        
-        if (sttoredQuiz) {
-            setQuiz(JSON.parse(sttoredQuiz));
+        };
+
+        const storedQuiz = typeof window !== "undefined" ? localStorage.getItem("quiz") : null;
+
+        if (storedQuiz) {
+            try {
+                setQuiz(JSON.parse(storedQuiz));
+            } catch (err) {
+                console.error("Failed to parse stored quiz:", err);
+                getQuiz();
+            }
         } else {
             getQuiz();
         }
     }, []);
 
-    return <quizContext.Provider value={{ quiz }}>{children}</quizContext.Provider>
+    const removeQuiz = () => {
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("quiz");
+        }
+        setQuiz([]);
+    };
+
+    return (
+        <quizContext.Provider value={{ quiz, removeQuiz }}>
+            {children}
+        </quizContext.Provider>
+    );
 }

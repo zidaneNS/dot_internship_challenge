@@ -1,15 +1,17 @@
 'use client';
 
-import React, { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export type UserContext = {
     user: string | null,
     storeUser: (val: string) => void
+    removeUser: () => void
 }
 
 const initContext: UserContext = {
     user: "",
-    storeUser: (val: string) => {}
+    storeUser: () => {},
+    removeUser: () => {}
 }
 
 const userContext = createContext<UserContext>(initContext);
@@ -31,5 +33,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setUser(val);
     }
 
-    return <userContext.Provider value={{ user, storeUser }}>{children}</userContext.Provider>
+    const removeUser = () => {
+        localStorage.removeItem("user");
+        setUser(null)
+    }
+
+    return <userContext.Provider value={{ user, storeUser, removeUser }}>{children}</userContext.Provider>
 }

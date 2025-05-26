@@ -6,3 +6,9 @@ export function shuffleArray<T>(array: T[]): T[] {
     }
     return shuffled;
 }
+
+export function decodeHTMLEntities(text: string) {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = text;
+    return textarea.value;
+}  
